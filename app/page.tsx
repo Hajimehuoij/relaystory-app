@@ -104,7 +104,7 @@ export default function RelayStoryMockup() {
     touchStartX.current = 0;
   };
 
-  const handleImageSelect = (e) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
