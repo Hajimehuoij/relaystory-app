@@ -45,7 +45,7 @@ export default function RelayStoryMockup() {
   const [selectedFollower, setSelectedFollower] = useState("");
   const [batonTimer, setBatonTimer] = useState(0);
   const fileInputRef = useRef(null);
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const touchStartX = useRef(0);
 
   useEffect(() => {
