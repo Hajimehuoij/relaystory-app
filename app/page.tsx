@@ -134,7 +134,7 @@ export default function RelayStoryMockup() {
     ctx.drawImage(video, 0, 0);    
     const imageData = canvas.toDataURL("image/png");
     setCapturedImage(imageData);
-    const stream = video.srcObject;
+    const stream = video.srcObject as MediaStream;
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
