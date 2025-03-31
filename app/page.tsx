@@ -40,7 +40,7 @@ export default function RelayStoryMockup() {
   const [hasPostingRight, setHasPostingRight] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [stories, setStories] = useState(() => [...dummyStories]);
-  const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showPassOn, setShowPassOn] = useState(false);
   const [selectedFollower, setSelectedFollower] = useState("");
   const [batonTimer, setBatonTimer] = useState(0);
@@ -109,7 +109,9 @@ export default function RelayStoryMockup() {
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      setCapturedImage(reader.result);
+      if (typeof reader.result === "string") {
+        setCapturedImage(reader.result);
+      }
     };
     reader.readAsDataURL(file);
   };
