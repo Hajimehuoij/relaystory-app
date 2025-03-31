@@ -89,11 +89,11 @@ export default function RelayStoryMockup() {
     setPage("post");
   };
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches?.[0]?.clientX ?? 0;
   };
 
-  const handleTouchEnd = (e) => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
     const deltaX = (e.changedTouches?.[0]?.clientX ?? 0) - touchStartX.current;
     if (deltaX > 100) {
