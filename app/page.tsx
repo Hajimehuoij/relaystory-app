@@ -75,7 +75,7 @@ export default function RelayStoryMockup() {
     return `${h}h ${m}m ${s}s`;
   };
 
-  const toggleLike = (id) => {
+  const toggleLike = (id: number) => {
     setStories((prev) =>
       prev.map((story) =>
         story.id === id ? { ...story, liked: !story.liked } : story
