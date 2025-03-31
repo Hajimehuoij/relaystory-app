@@ -49,7 +49,7 @@ export default function RelayStoryMockup() {
   const touchStartX = useRef(0);
 
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout;
     if (hasPostingRight && batonTimer === 0) {
       setBatonTimer(24 * 60 * 60);
     }
