@@ -68,7 +68,7 @@ export default function RelayStoryMockup() {
     return () => clearInterval(timer);
   }, [hasPostingRight, batonTimer]);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
