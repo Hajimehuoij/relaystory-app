@@ -129,7 +129,9 @@ export default function RelayStoryMockup() {
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0);    
     const imageData = canvas.toDataURL("image/png");
     setCapturedImage(imageData);
     const stream = video.srcObject;
