@@ -172,76 +172,48 @@ export default function RelayStoryMockup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <nav className="flex justify-between items-center mb-4">
-        <button onClick={() => setPage("home")} className="text-lg font-bold">🏠 ホーム</button>
-        <span className="text-xl font-bold">RelayStory</span>
-        <button onClick={() => setPage("profile")} className="text-lg font-bold">👤 プロフィール</button>
+    <div className="min-h-screen bg-white px-4 py-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <nav className="flex justify-between items-center mb-6 px-1">
+        <button onClick={() => setPage("home")} className="text-base font-semibold">🏠 ホーム</button>
+        <span className="text-xl font-bold tracking-wide">RelayStory</span>
+        <button onClick={() => setPage("profile")} className="text-base font-semibold">👤 プロフィール</button>
       </nav>
 
       {showNotification && (
-        <div className="mb-4 p-3 bg-yellow-200 rounded text-center">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded text-center shadow">
           バトンが届きました！受け取りますか？
           <Button className="ml-2" onClick={acceptPostingRight}>受け取る</Button>
-        </div>
+        </motion.div>
       )}
 
       {hasPostingRight && (
-        <div className="mb-4 text-center text-sm text-gray-600">
+        <p className="mb-4 text-center text-xs text-gray-500">
           投稿可能時間：{formatTime(batonTimer)}
-        </div>
+        </p>
       )}
 
       {page === "home" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {stories.map((story) => (
-            <Card key={story.id}>
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-700">@{story.user} のストーリー</p>
-                {story.imageUrl && (
-                  <img src={story.imageUrl} alt="Story image" className="w-full h-auto my-2 rounded" />
-                )}
-                <Button variant="outline" onClick={() => toggleLike(story.id)}>
-                  {story.liked ? "❤️ いいね済み" : "🤍 いいねする"}
-                </Button>
-              </CardContent>
-            </Card>
+            <motion.div key={story.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+              <Card className="rounded-2xl shadow-md overflow-hidden">
+                <CardContent className="p-3">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                    <p className="text-sm font-medium text-gray-800">@{story.user}</p>
+                  </div>
+                  {story.imageUrl && (
+                    <img src={story.imageUrl} alt="Story" className="w-full rounded-xl object-cover max-h-[480px]" />
+                  )}
+                  <div className="pt-3">
+                    <Button variant="ghost" onClick={() => toggleLike(story.id)}>
+                      {story.liked ? "❤️ いいね済み" : "🤍 いいねする"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
-      )}
-
-      {page === "post" && (
-        <div className="space-y-4 text-center">
-          <p className="text-sm text-gray-600">画像を選ぶか、カメラを使って投稿しましょう。</p>
-          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} />
-          <Button onClick={startCamera}>カメラ起動</Button>
-          <video ref={videoRef} autoPlay playsInline className="mx-auto my-2 w-full max-w-xs rounded" />
-          <Button onClick={captureFromCamera}>📸 写真を撮る</Button>
-          {capturedImage && (
-            <div>
-              <img src={capturedImage} alt="Captured" className="w-full h-auto my-2 rounded" />
-              <Button onClick={handleSubmitPost}>✅ 投稿する</Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {page === "profile" && (
-        <div className="text-center text-gray-600">
-          <p>プロフィールページ（仮）</p>
-        </div>
-      )}
-
-      {showPassOn && (
-        <div className="mt-6 p-4 bg-blue-100 rounded text-center">
-          <p>誰にバトンを渡しますか？</p>
-          <select value={selectedFollower} onChange={(e) => setSelectedFollower(e.target.value)} className="my-2 p-2 rounded">
-            <option value="">ランダムに選ぶ</option>
-            {dummyFollowers.map((f) => (
-              <option key={f} value={f}>@{f}</option>
-            ))}
-          </select>
-          <Button onClick={handlePassOn}>バトンを渡す</Button>
         </div>
       )}
     </div>
