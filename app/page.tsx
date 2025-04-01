@@ -126,7 +126,7 @@ function AnimatedStoryCard({ story, toggleLike }: { story: Story; toggleLike: (i
 
 export default function RelayStoryMockup() {
   const [page, setPage] = useState("home");
-  const [hasPostingRight, setHasPostingRight] = useState(false);
+  const [hasPostingRight, setHasPostingRight] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
   const [stories, setStories] = useState<Story[]>(() => [...dummyStories]);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -249,6 +249,15 @@ export default function RelayStoryMockup() {
           バトンが届きました！受け取りますか？
           <Button className="ml-2" onClick={acceptPostingRight}>受け取る</Button>
         </motion.div>
+      )}
+
+      {hasPostingRight && page === "home" && (
+        <Button
+          onClick={() => setPage("post")}
+          className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full shadow-lg px-6 py-3 text-lg"
+        >
+          ＋投稿
+        </Button>
       )}
 
       {hasPostingRight && (
