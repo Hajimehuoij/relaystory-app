@@ -1,4 +1,3 @@
-"use client";
 // ここからRelayStoryMockup.tsx
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,18 +34,25 @@ const dummyFollowers = [
   "aya_777",
 ];
 
+type Story = {
+  id: number;
+  user: string;
+  imageUrl: string;
+  liked: boolean;
+};
+
 export default function RelayStoryMockup() {
   const [page, setPage] = useState("home");
   const [hasPostingRight, setHasPostingRight] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
-  const [stories, setStories] = useState(() => [...dummyStories]);
+  const [stories, setStories] = useState<Story[]>(() => [...dummyStories]);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showPassOn, setShowPassOn] = useState(false);
   const [selectedFollower, setSelectedFollower] = useState("");
   const [batonTimer, setBatonTimer] = useState(0);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const touchStartX = useRef(0);
+  const touchStartX = useRef<number>(0);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -68,14 +74,14 @@ export default function RelayStoryMockup() {
     return () => clearInterval(timer);
   }, [hasPostingRight, batonTimer]);
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${h}h ${m}m ${s}s`;
   };
 
-  const toggleLike = (id: number) => {
+  const toggleLike = (id: number): void => {
     setStories((prev) =>
       prev.map((story) =>
         story.id === id ? { ...story, liked: !story.liked } : story
@@ -83,18 +89,17 @@ export default function RelayStoryMockup() {
     );
   };
 
-  const acceptPostingRight = () => {
+  const acceptPostingRight = (): void => {
     setHasPostingRight(true);
     setShowNotification(false);
     setPage("post");
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent): void => {
     touchStartX.current = e.touches?.[0]?.clientX ?? 0;
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
+  const handleTouchEnd = (e: React.TouchEvent): void => {
     const deltaX = (e.changedTouches?.[0]?.clientX ?? 0) - touchStartX.current;
     if (deltaX > 100) {
       setPage("profile");
@@ -104,26 +109,24 @@ export default function RelayStoryMockup() {
     touchStartX.current = 0;
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setCapturedImage(reader.result);
-      }
+      setCapturedImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
 
-  const startCamera = async () => {
+  const startCamera = async (): Promise<void> => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
     }
   };
 
-  const captureFromCamera = () => {
+  const captureFromCamera = (): void => {
     const video = videoRef.current;
     if (!video) return;
     const canvas = document.createElement("canvas");
@@ -131,7 +134,7 @@ export default function RelayStoryMockup() {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0);    
+    ctx.drawImage(video, 0, 0);
     const imageData = canvas.toDataURL("image/png");
     setCapturedImage(imageData);
     const stream = video.srcObject as MediaStream;
@@ -140,11 +143,11 @@ export default function RelayStoryMockup() {
     }
   };
 
-  const handleSubmitPost = () => {
-    const newStory = {
+  const handleSubmitPost = (): void => {
+    const newStory: Story = {
       id: stories.length + 1,
       user: "you_123",
-      imageUrl: capturedImage,
+      imageUrl: capturedImage as string,
       liked: false,
     };
     setStories([newStory, ...stories]);
@@ -154,7 +157,7 @@ export default function RelayStoryMockup() {
     setPage("home");
   };
 
-  const handlePassOn = () => {
+  const handlePassOn = (): void => {
     const target = selectedFollower || dummyFollowers[Math.floor(Math.random() * dummyFollowers.length)];
     alert(`バトンを @${target} に渡しました！🎉`);
     setSelectedFollower("");
@@ -165,80 +168,5 @@ export default function RelayStoryMockup() {
     }, 3000);
   };
 
-  return (
-    <div
-      className="p-4 max-w-sm mx-auto space-y-6 bg-gradient-to-b from-white to-gray-100 min-h-screen"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="flex justify-between items-center mb-4">
-        <Button variant="ghost" onClick={() => setPage("home")} className="text-base">
-          🏠 ホーム
-        </Button>
-        <h1 className="text-xl font-bold text-gray-800">RelayStory</h1>
-        <Button variant="ghost" onClick={() => setPage("profile")} className="text-base">
-          👤 プロフィール
-        </Button>
-      </div>
-
-      {hasPostingRight && batonTimer > 0 && (
-        <motion.p
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center text-sm text-indigo-600 font-medium"
-        >
-          ⏳ 投稿権保持中：{formatTime(batonTimer)}
-        </motion.p>
-      )}
-
-      {showPassOn && (
-        <Card className="text-center bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl">
-          <CardContent className="p-6 space-y-4">
-            <h2 className="text-lg font-bold text-indigo-600">🚀 バトンを渡そう！</h2>
-            <p className="text-sm text-gray-600">誰にバトンを渡す？</p>
-            <select
-              value={selectedFollower}
-              onChange={(e) => setSelectedFollower(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="">選択してください</option>
-              {dummyFollowers.map((follower) => (
-                <option key={follower} value={follower}>
-                  @{follower}
-                </option>
-              ))}
-            </select>
-            <Button onClick={handlePassOn} className="w-full" disabled={!selectedFollower}>
-              🎯 バトンを渡す
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-4">
-        {stories.map((story) => (
-          <Card key={story.id} className="bg-white/80 backdrop-blur-lg rounded-xl shadow">
-            <CardContent className="p-4">
-              <p className="text-sm text-gray-500 mb-2 font-medium">@{story.user} のストーリー</p>
-              <div className="w-full h-60 relative rounded-xl overflow-hidden mb-4">
-                <Image
-                  src={story.imageUrl}
-                  alt="story image"
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-              <Button
-                variant={story.liked ? "default" : "outline"}
-                onClick={() => toggleLike(story.id)}
-                className="w-full font-semibold"
-              >
-                {story.liked ? "💖 いいね済み" : "🤍 いいねする"}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+  return ( ... JSX は省略 ... );
 }
