@@ -45,6 +45,12 @@ const dummyFollowers = [
   "aya_777",
 ];
 
+const dummyStats = {
+  batons: 3,
+  followers: 128,
+  following: 87
+};
+
 type Story = {
   id: number;
   user: string;
@@ -177,13 +183,9 @@ export default function RelayStoryMockup() {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
     const deltaX = (e.changedTouches?.[0]?.clientX ?? 0) - touchStartX.current;
-    if (deltaX > 100) {
-      setPage("profile");
-    } else if (deltaX < -100) {
-      setPage("home");
-    }
+    if (deltaX > 100) setPage("profile");
+    else if (deltaX < -100) setPage("home");
     touchStartX.current = 0;
   };
 
@@ -191,9 +193,7 @@ export default function RelayStoryMockup() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setCapturedImage(reader.result as string);
-    };
+    reader.onloadend = () => setCapturedImage(reader.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -216,9 +216,7 @@ export default function RelayStoryMockup() {
     const imageData = canvas.toDataURL("image/png");
     setCapturedImage(imageData);
     const stream = video.srcObject as MediaStream;
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-    }
+    if (stream) stream.getTracks().forEach((track) => track.stop());
   };
 
   const handleSubmitPost = () => {
@@ -238,19 +236,8 @@ export default function RelayStoryMockup() {
     setPage("home");
   };
 
-  const handlePassOn = () => {
-    const target = selectedFollower || dummyFollowers[Math.floor(Math.random() * dummyFollowers.length)];
-    alert(`バトンを @${target} に渡しました！🎉`);
-    setSelectedFollower("");
-    setShowPassOn(false);
-    setTimeout(() => {
-      setHasPostingRight(true);
-      setShowNotification(true);
-    }, 3000);
-  };
-
   return (
-    <div className="min-h-screen bg-[#f7f6f3] px-4 py-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="min-h-screen bg-[#f7f6f3] px-4 py-6 space-y-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <nav className="flex justify-between items-center mb-6 px-1">
         <button onClick={() => setPage("home")} className="text-base font-semibold">🏠 ホーム</button>
         <span className="text-xl font-bold tracking-wide">RelayStory</span>
@@ -275,6 +262,39 @@ export default function RelayStoryMockup() {
           {stories.map((story) => (
             <AnimatedStoryCard key={story.id} story={story} toggleLike={toggleLike} />
           ))}
+        </div>
+      )}
+
+      {page === "post" && (
+        <div className="space-y-4 bg-white p-4 rounded-xl shadow">
+          <div className="relative w-full aspect-[9/16] bg-gray-200 rounded-xl flex items-center justify-center">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover rounded-xl" />
+            {!capturedImage && <span className="absolute text-gray-500">カメラプレビュー</span>}
+          </div>
+          <div className="flex justify-around">
+            <Button onClick={startCamera}>📹 カメラON</Button>
+            <Button onClick={captureFromCamera}>📷 撮影</Button>
+            <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>📁 選択</Button>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+          </div>
+          <Button className="w-full bg-blue-600 text-white" onClick={handleSubmitPost}>投稿する</Button>
+        </div>
+      )}
+
+      {page === "profile" && (
+        <div className="bg-white p-4 rounded-xl shadow space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm">所持バトン数: {dummyStats.batons}</p>
+            <p className="text-sm">フォロワー: {dummyStats.followers}</p>
+            <p className="text-sm">フォロー中: {dummyStats.following}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {stories.map((story) => (
+              <div key={story.id} className="w-full aspect-[9/16] bg-gray-200 rounded-md overflow-hidden">
+                <img src={story.imageUrl} alt="投稿" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
