@@ -228,6 +228,8 @@ export default function RelayStoryMockup() {
       imageUrl: capturedImage as string,
       liked: false,
       timestamp: new Date().toISOString(),
+      comments: [],
+      tag: "",
     };
     setStories([newStory, ...stories]);
     setHasPostingRight(false);
