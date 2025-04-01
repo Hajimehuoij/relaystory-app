@@ -37,19 +37,8 @@ const dummyStories = [
   },
 ];
 
-const dummyFollowers = [
-  "sakura_chan",
-  "kenta_92",
-  "miki_love",
-  "johnny_rocket",
-  "aya_777",
-];
-
-const dummyStats = {
-  batons: 3,
-  followers: 128,
-  following: 87
-};
+const dummyFollowers = ["sakura_chan", "kenta_92", "miki_love", "johnny_rocket", "aya_777"];
+const dummyStats = { batons: 3, followers: 128, following: 87 };
 
 type Story = {
   id: number;
@@ -130,8 +119,6 @@ export default function RelayStoryMockup() {
   const [showNotification, setShowNotification] = useState(false);
   const [stories, setStories] = useState<Story[]>(() => [...dummyStories]);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [showPassOn, setShowPassOn] = useState(false);
-  const [selectedFollower, setSelectedFollower] = useState("");
   const [batonTimer, setBatonTimer] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -157,25 +144,8 @@ export default function RelayStoryMockup() {
     return () => clearInterval(timer);
   }, [hasPostingRight, batonTimer]);
 
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h}h ${m}m ${s}s`;
-  };
-
   const toggleLike = (id: number) => {
-    setStories((prev) =>
-      prev.map((story) =>
-        story.id === id ? { ...story, liked: !story.liked } : story
-      )
-    );
-  };
-
-  const acceptPostingRight = () => {
-    setHasPostingRight(true);
-    setShowNotification(false);
-    setPage("post");
+    setStories((prev) => prev.map((story) => story.id === id ? { ...story, liked: !story.liked } : story));
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -187,14 +157,6 @@ export default function RelayStoryMockup() {
     if (deltaX > 100) setPage("profile");
     else if (deltaX < -100) setPage("home");
     touchStartX.current = 0;
-  };
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setCapturedImage(reader.result as string);
-    reader.readAsDataURL(file);
   };
 
   const startCamera = async () => {
@@ -219,21 +181,35 @@ export default function RelayStoryMockup() {
     if (stream) stream.getTracks().forEach((track) => track.stop());
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setCapturedImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmitPost = () => {
+    if (!capturedImage) return;
     const newStory: Story = {
       id: stories.length + 1,
       user: "you_123",
-      imageUrl: capturedImage as string,
+      imageUrl: capturedImage,
       liked: false,
       timestamp: new Date().toISOString(),
       comments: [],
       tag: ""
     };
     setStories([newStory, ...stories]);
-    setHasPostingRight(false);
     setCapturedImage(null);
-    setShowPassOn(true);
     setPage("home");
+  };
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}h ${m}m ${s}s`;
   };
 
   return (
@@ -243,13 +219,6 @@ export default function RelayStoryMockup() {
         <span className="text-xl font-bold tracking-wide">RelayStory</span>
         <button onClick={() => setPage("profile")} className="text-base font-semibold">👤 プロフィール</button>
       </nav>
-
-      {showNotification && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded text-center shadow">
-          バトンが届きました！受け取りますか？
-          <Button className="ml-2" onClick={acceptPostingRight}>受け取る</Button>
-        </motion.div>
-      )}
 
       {hasPostingRight && page === "home" && (
         <Button
@@ -276,17 +245,24 @@ export default function RelayStoryMockup() {
 
       {page === "post" && (
         <div className="space-y-4 bg-white p-4 rounded-xl shadow">
-          <div className="relative w-full aspect-[9/16] bg-gray-200 rounded-xl flex items-center justify-center">
-            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover rounded-xl" />
-            {!capturedImage && <span className="absolute text-gray-500">カメラプレビュー</span>}
-          </div>
+          {capturedImage ? (
+            <div className="relative w-full aspect-[9/16] bg-gray-100 rounded-xl overflow-hidden">
+              <img src={capturedImage} alt="preview" className="w-full h-full object-cover" />
+              <Button onClick={() => setCapturedImage(null)} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">やり直し</Button>
+            </div>
+          ) : (
+            <div className="relative w-full aspect-[9/16] bg-gray-200 rounded-xl flex items-center justify-center">
+              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover rounded-xl" />
+              <span className="absolute text-gray-500">カメラプレビュー</span>
+            </div>
+          )}
           <div className="flex justify-around">
             <Button onClick={startCamera}>📹 カメラON</Button>
-            <Button onClick={captureFromCamera}>📷 撮影</Button>
+            <Button onClick={captureFromCamera} disabled={!videoRef.current}>📷 撮影</Button>
             <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>📁 選択</Button>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
           </div>
-          <Button className="w-full bg-blue-600 text-white" onClick={handleSubmitPost}>投稿する</Button>
+          <Button className="w-full bg-blue-600 text-white" onClick={handleSubmitPost} disabled={!capturedImage}>投稿する</Button>
         </div>
       )}
 
