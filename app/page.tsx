@@ -13,18 +13,21 @@ const dummyStories = [
     user: "haruka_01",
     imageUrl: "/story1.jpg",
     liked: false,
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3時間前
   },
   {
     id: 2,
     user: "yuto_kawaii",
     imageUrl: "/story2.jpg",
     liked: false,
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6時間前
   },
   {
     id: 3,
     user: "misa_123",
     imageUrl: "/story3.jpg",
     liked: false,
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1日前
   },
 ];
 
@@ -41,7 +44,16 @@ type Story = {
   user: string;
   imageUrl: string;
   liked: boolean;
+  timestamp: string;
 };
+
+function timeAgo(timestamp: string): string {
+  const diff = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
+  if (diff < 60) return `${diff}秒前に投稿`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}分前に投稿`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}時間前に投稿`;
+  return `${Math.floor(diff / 86400)}日前に投稿`;
+}
 
 export default function RelayStoryMockup() {
   const [page, setPage] = useState("home");
@@ -152,6 +164,7 @@ export default function RelayStoryMockup() {
       user: "you_123",
       imageUrl: capturedImage as string,
       liked: false,
+      timestamp: new Date().toISOString(),
     };
     setStories([newStory, ...stories]);
     setHasPostingRight(false);
@@ -200,7 +213,10 @@ export default function RelayStoryMockup() {
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-                    <p className="text-sm font-medium text-gray-800">@{story.user}</p>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">@{story.user}</p>
+                      <p className="text-xs text-gray-500">{timeAgo(story.timestamp)}</p>
+                    </div>
                   </div>
                   {story.imageUrl && (
                     <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
