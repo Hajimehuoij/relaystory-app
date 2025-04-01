@@ -4,7 +4,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 
 const dummyStories = [
@@ -53,6 +53,49 @@ function timeAgo(timestamp: string): string {
   if (diff < 3600) return `${Math.floor(diff / 60)}分前に投稿`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}時間前に投稿`;
   return `${Math.floor(diff / 86400)}日前に投稿`;
+}
+
+function AnimatedStoryCard({ story, toggleLike }: { story: Story; toggleLike: (id: number) => void }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      key={story.id}
+    >
+      <Card className="rounded-2xl shadow-md overflow-hidden bg-white">
+        <CardContent className="p-3">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+            <div>
+              <p className="text-sm font-medium text-gray-800">@{story.user}</p>
+              <p className="text-xs text-gray-500">{timeAgo(story.timestamp)}</p>
+            </div>
+          </div>
+          {story.imageUrl && (
+            <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
+              <img src={story.imageUrl} alt="Story" className="absolute inset-0 w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="pt-3 flex items-center space-x-2">
+            <motion.button
+              whileTap={{ scale: 1.4 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              onClick={() => toggleLike(story.id)}
+              className="text-xl"
+            >
+              {story.liked ? "❤️" : "🤍"}
+            </motion.button>
+            <span className="text-sm text-gray-600">{story.liked ? 1 : 0} いいね</span>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
 export default function RelayStoryMockup() {
@@ -208,35 +251,7 @@ export default function RelayStoryMockup() {
       {page === "home" && (
         <div className="space-y-6">
           {stories.map((story) => (
-            <motion.div key={story.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-              <Card className="rounded-2xl shadow-md overflow-hidden bg-white">
-                <CardContent className="p-3">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">@{story.user}</p>
-                      <p className="text-xs text-gray-500">{timeAgo(story.timestamp)}</p>
-                    </div>
-                  </div>
-                  {story.imageUrl && (
-                    <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
-                      <img src={story.imageUrl} alt="Story" className="absolute inset-0 w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="pt-3 flex items-center space-x-2">
-                    <motion.button
-                      whileTap={{ scale: 1.4 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                      onClick={() => toggleLike(story.id)}
-                      className="text-xl"
-                    >
-                      {story.liked ? "❤️" : "🤍"}
-                    </motion.button>
-                    <span className="text-sm text-gray-600">{story.liked ? 1 : 0} いいね</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <AnimatedStoryCard key={story.id} story={story} toggleLike={toggleLike} />
           ))}
         </div>
       )}
