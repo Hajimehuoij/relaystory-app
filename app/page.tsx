@@ -172,7 +172,7 @@ export default function RelayStoryMockup() {
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 py-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="min-h-screen bg-[#f7f6f3] px-4 py-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <nav className="flex justify-between items-center mb-6 px-1">
         <button onClick={() => setPage("home")} className="text-base font-semibold">🏠 ホーム</button>
         <span className="text-xl font-bold tracking-wide">RelayStory</span>
@@ -196,14 +196,16 @@ export default function RelayStoryMockup() {
         <div className="space-y-6">
           {stories.map((story) => (
             <motion.div key={story.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-              <Card className="rounded-2xl shadow-md overflow-hidden">
+              <Card className="rounded-2xl shadow-md overflow-hidden bg-white">
                 <CardContent className="p-3">
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                     <p className="text-sm font-medium text-gray-800">@{story.user}</p>
                   </div>
                   {story.imageUrl && (
-                    <img src={story.imageUrl} alt="Story" className="w-full rounded-xl object-cover max-h-[480px]" />
+                    <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
+                      <img src={story.imageUrl} alt="Story" className="absolute inset-0 w-full h-full object-cover" />
+                    </div>
                   )}
                   <div className="pt-3">
                     <Button variant="ghost" onClick={() => toggleLike(story.id)}>
