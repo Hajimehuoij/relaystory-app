@@ -1,6 +1,6 @@
+// ここからRelayStoryMockup.tsx
 "use client";
 
-// ここからRelayStoryMockup.tsx
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
@@ -102,6 +102,7 @@ export default function RelayStoryMockup() {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
     const deltaX = (e.changedTouches?.[0]?.clientX ?? 0) - touchStartX.current;
     if (deltaX > 100) {
       setPage("profile");
@@ -146,11 +147,10 @@ export default function RelayStoryMockup() {
   };
 
   const handleSubmitPost = () => {
-    if (!capturedImage) return;
     const newStory: Story = {
       id: stories.length + 1,
       user: "you_123",
-      imageUrl: capturedImage,
+      imageUrl: capturedImage as string,
       liked: false,
     };
     setStories([newStory, ...stories]);
@@ -171,5 +171,79 @@ export default function RelayStoryMockup() {
     }, 3000);
   };
 
-  return <div>（UIのJSXは今後追加）</div>;
+  return (
+    <div className="min-h-screen bg-gray-100 p-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <nav className="flex justify-between items-center mb-4">
+        <span className="text-lg font-bold">🏠 ホーム</span>
+        <span className="text-xl font-bold">RelayStory</span>
+        <span className="text-lg font-bold">👤 プロフィール</span>
+      </nav>
+
+      {showNotification && (
+        <div className="mb-4 p-3 bg-yellow-200 rounded text-center">
+          バトンが届きました！受け取りますか？
+          <Button className="ml-2" onClick={acceptPostingRight}>受け取る</Button>
+        </div>
+      )}
+
+      {hasPostingRight && (
+        <div className="mb-4 text-center text-sm text-gray-600">
+          投稿可能時間：{formatTime(batonTimer)}
+        </div>
+      )}
+
+      {page === "home" && (
+        <div className="space-y-4">
+          {stories.map((story) => (
+            <Card key={story.id}>
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-700">@{story.user} のストーリー</p>
+                {story.imageUrl && (
+                  <img src={story.imageUrl} alt="Story image" className="w-full h-auto my-2 rounded" />
+                )}
+                <Button variant="outline" onClick={() => toggleLike(story.id)}>
+                  {story.liked ? "❤️ いいね済み" : "🤍 いいねする"}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {page === "post" && (
+        <div className="space-y-4 text-center">
+          <p className="text-sm text-gray-600">画像を選ぶか、カメラを使って投稿しましょう。</p>
+          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} />
+          <Button onClick={startCamera}>カメラ起動</Button>
+          <video ref={videoRef} autoPlay playsInline className="mx-auto my-2 w-full max-w-xs rounded" />
+          <Button onClick={captureFromCamera}>📸 写真を撮る</Button>
+          {capturedImage && (
+            <div>
+              <img src={capturedImage} alt="Captured" className="w-full h-auto my-2 rounded" />
+              <Button onClick={handleSubmitPost}>✅ 投稿する</Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {page === "profile" && (
+        <div className="text-center text-gray-600">
+          <p>プロフィールページ（仮）</p>
+        </div>
+      )}
+
+      {showPassOn && (
+        <div className="mt-6 p-4 bg-blue-100 rounded text-center">
+          <p>誰にバトンを渡しますか？</p>
+          <select value={selectedFollower} onChange={(e) => setSelectedFollower(e.target.value)} className="my-2 p-2 rounded">
+            <option value="">ランダムに選ぶ</option>
+            {dummyFollowers.map((f) => (
+              <option key={f} value={f}>@{f}</option>
+            ))}
+          </select>
+          <Button onClick={handlePassOn}>バトンを渡す</Button>
+        </div>
+      )}
+    </div>
+  );
 }
