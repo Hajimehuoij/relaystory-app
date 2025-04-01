@@ -14,6 +14,8 @@ const dummyStories = [
     imageUrl: "/story1.jpg",
     liked: false,
     timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    comments: ["最高！", "いい感じ"],
+    tag: "🔥人気"
   },
   {
     id: 2,
@@ -21,6 +23,8 @@ const dummyStories = [
     imageUrl: "/story2.jpg",
     liked: false,
     timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    comments: [],
+    tag: ""
   },
   {
     id: 3,
@@ -28,6 +32,8 @@ const dummyStories = [
     imageUrl: "/story3.jpg",
     liked: false,
     timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    comments: ["素敵！"],
+    tag: ""
   },
 ];
 
@@ -45,6 +51,8 @@ type Story = {
   imageUrl: string;
   liked: boolean;
   timestamp: string;
+  comments: string[];
+  tag: string;
 };
 
 function timeAgo(timestamp: string): string {
@@ -75,6 +83,11 @@ function AnimatedStoryCard({ story, toggleLike }: { story: Story; toggleLike: (i
               <p className="text-sm font-medium text-gray-800">@{story.user}</p>
               <p className="text-xs text-gray-500">{timeAgo(story.timestamp)}</p>
             </div>
+            {story.tag && (
+              <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-medium">
+                {story.tag}
+              </span>
+            )}
           </div>
           {story.imageUrl && (
             <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
@@ -92,6 +105,13 @@ function AnimatedStoryCard({ story, toggleLike }: { story: Story; toggleLike: (i
             </motion.button>
             <span className="text-sm text-gray-600">{story.liked ? 1 : 0} いいね</span>
           </div>
+          {story.comments.length > 0 && (
+            <div className="mt-2 text-sm text-gray-700">
+              {story.comments.slice(0, 2).map((comment, idx) => (
+                <p key={idx}>💬 {comment}</p>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>
