@@ -13,21 +13,21 @@ const dummyStories = [
     user: "haruka_01",
     imageUrl: "/story1.jpg",
     liked: false,
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3時間前
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 2,
     user: "yuto_kawaii",
     imageUrl: "/story2.jpg",
     liked: false,
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6時間前
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 3,
     user: "misa_123",
     imageUrl: "/story3.jpg",
     liked: false,
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1日前
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -223,10 +223,16 @@ export default function RelayStoryMockup() {
                       <img src={story.imageUrl} alt="Story" className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   )}
-                  <div className="pt-3">
-                    <Button variant="ghost" onClick={() => toggleLike(story.id)}>
-                      {story.liked ? "❤️ いいね済み" : "🤍 いいねする"}
-                    </Button>
+                  <div className="pt-3 flex items-center space-x-2">
+                    <motion.button
+                      whileTap={{ scale: 1.4 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      onClick={() => toggleLike(story.id)}
+                      className="text-xl"
+                    >
+                      {story.liked ? "❤️" : "🤍"}
+                    </motion.button>
+                    <span className="text-sm text-gray-600">{story.liked ? 1 : 0} いいね</span>
                   </div>
                 </CardContent>
               </Card>
