@@ -229,7 +229,7 @@ export default function RelayStoryMockup() {
       liked: false,
       timestamp: new Date().toISOString(),
       comments: [],
-      tag: "",
+      tag: ""
     };
     setStories([newStory, ...stories]);
     setHasPostingRight(false);
