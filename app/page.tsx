@@ -34,7 +34,7 @@ const dummyStories = [
     timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     comments: ["素敵！"],
     tag: ""
-  }
+  },
 ];
 
 const dummyFollowers = [
@@ -42,7 +42,7 @@ const dummyFollowers = [
   "kenta_92",
   "miki_love",
   "johnny_rocket",
-  "aya_777"
+  "aya_777",
 ];
 
 const dummyStats = {
@@ -51,21 +51,94 @@ const dummyStats = {
   following: 87
 };
 
+type Story = {
+  id: number;
+  user: string;
+  imageUrl: string;
+  liked: boolean;
+  timestamp: string;
+  comments: string[];
+  tag: string;
+};
+
+function timeAgo(timestamp: string): string {
+  const diff = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
+  if (diff < 60) return `${diff}秒前に投稿`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}分前に投稿`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}時間前に投稿`;
+  return `${Math.floor(diff / 86400)}日前に投稿`;
+}
+
+function AnimatedStoryCard({ story, toggleLike }: { story: Story; toggleLike: (id: number) => void }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      key={story.id}
+    >
+      <Card className="rounded-2xl shadow-md overflow-hidden bg-white">
+        <CardContent className="p-3">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+            <div>
+              <p className="text-sm font-medium text-gray-800">@{story.user}</p>
+              <p className="text-xs text-gray-500">{timeAgo(story.timestamp)}</p>
+            </div>
+            {story.tag && (
+              <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-medium">
+                {story.tag}
+              </span>
+            )}
+          </div>
+          {story.imageUrl && (
+            <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
+              <img src={story.imageUrl} alt="Story" className="absolute inset-0 w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="pt-3 flex items-center space-x-2">
+            <motion.button
+              whileTap={{ scale: 1.4 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              onClick={() => toggleLike(story.id)}
+              className="text-xl"
+            >
+              {story.liked ? "❤️" : "🤍"}
+            </motion.button>
+            <span className="text-sm text-gray-600">{story.liked ? 1 : 0} いいね</span>
+          </div>
+          {story.comments.length > 0 && (
+            <div className="mt-2 text-sm text-gray-700">
+              {story.comments.slice(0, 2).map((comment, idx) => (
+                <p key={idx}>💬 {comment}</p>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
 export default function RelayStoryMockup() {
   const [page, setPage] = useState("home");
   const [hasPostingRight, setHasPostingRight] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
-  const [stories, setStories] = useState(() => [...dummyStories]);
-  const [capturedImage, setCapturedImage] = useState(null);
+  const [stories, setStories] = useState<Story[]>(() => [...dummyStories]);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showPassOn, setShowPassOn] = useState(false);
   const [selectedFollower, setSelectedFollower] = useState("");
   const [batonTimer, setBatonTimer] = useState(0);
-  const fileInputRef = useRef(null);
-  const videoRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const touchStartX = useRef(0);
 
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setInterval>;
     if (hasPostingRight && batonTimer === 0) {
       setBatonTimer(24 * 60 * 60);
     }
@@ -84,14 +157,14 @@ export default function RelayStoryMockup() {
     return () => clearInterval(timer);
   }, [hasPostingRight, batonTimer]);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${h}h ${m}m ${s}s`;
   };
 
-  const toggleLike = (id) => {
+  const toggleLike = (id: number) => {
     setStories((prev) =>
       prev.map((story) =>
         story.id === id ? { ...story, liked: !story.liked } : story
@@ -105,27 +178,22 @@ export default function RelayStoryMockup() {
     setPage("post");
   };
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches?.[0]?.clientX ?? 0;
   };
 
-  const handleTouchEnd = (e) => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     const deltaX = (e.changedTouches?.[0]?.clientX ?? 0) - touchStartX.current;
-    if (deltaX > 100) {
-      setPage("profile");
-    } else if (deltaX < -100) {
-      setPage("home");
-    }
+    if (deltaX > 100) setPage("profile");
+    else if (deltaX < -100) setPage("home");
     touchStartX.current = 0;
   };
 
-  const handleImageSelect = (e) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setCapturedImage(reader.result);
-    };
+    reader.onloadend = () => setCapturedImage(reader.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -147,17 +215,15 @@ export default function RelayStoryMockup() {
     ctx.drawImage(video, 0, 0);
     const imageData = canvas.toDataURL("image/png");
     setCapturedImage(imageData);
-    const stream = video.srcObject;
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-    }
+    const stream = video.srcObject as MediaStream;
+    if (stream) stream.getTracks().forEach((track) => track.stop());
   };
 
   const handleSubmitPost = () => {
-    const newStory = {
+    const newStory: Story = {
       id: stories.length + 1,
       user: "you_123",
-      imageUrl: capturedImage,
+      imageUrl: capturedImage as string,
       liked: false,
       timestamp: new Date().toISOString(),
       comments: [],
@@ -171,69 +237,59 @@ export default function RelayStoryMockup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f6f3] px-4 py-6 space-y-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <nav className="flex justify-between items-center mb-6 px-1 relative">
+    <div className="min-h-screen bg-[#f7f6f3] px-4 pt-6 pb-32 space-y-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <nav className="flex justify-between items-center mb-6 px-1">
         <button onClick={() => setPage("home")} className="text-base font-semibold">🏠 ホーム</button>
         <span className="text-xl font-bold tracking-wide">RelayStory</span>
-        <div className="flex items-center space-x-2">
-          <button onClick={() => setPage("profile")} className="text-base font-semibold">👤 プロフィール</button>
-          {hasPostingRight && page === "home" && (
-            <Button
-              onClick={() => setPage("post")}
-              className="text-sm bg-blue-600 text-white rounded-full px-4 py-1 shadow"
-            >
-              ＋投稿
-            </Button>
-          )}
-        </div>
+        <button onClick={() => setPage("profile")} className="text-base font-semibold">👤 プロフィール</button>
       </nav>
+
       {showNotification && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded text-center shadow">
           バトンが届きました！受け取りますか？
           <Button className="ml-2" onClick={acceptPostingRight}>受け取る</Button>
         </motion.div>
       )}
+
+      {hasPostingRight && page === "home" && (
+        <Button
+          onClick={() => setPage("post")}
+          className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full shadow-lg px-6 py-3 text-lg"
+        >
+          ＋投稿
+        </Button>
+      )}
+
       {hasPostingRight && (
         <p className="mb-4 text-center text-xs text-gray-500">
           投稿可能時間：{formatTime(batonTimer)}
         </p>
       )}
+
       {page === "home" && (
         <div className="space-y-6">
           {stories.map((story) => (
-            <div key={story.id} className="rounded-2xl shadow-md overflow-hidden bg-white">
-              <CardContent className="p-3">
-                <p className="text-sm font-medium">@{story.user}</p>
-                <p className="text-xs text-gray-500">{story.timestamp}</p>
-                <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden">
-                  <img src={story.imageUrl} className="absolute inset-0 w-full h-full object-cover" />
-                </div>
-                <div className="pt-3 flex items-center space-x-2">
-                  <motion.button whileTap={{ scale: 1.4 }} transition={{ type: "spring", stiffness: 400, damping: 10 }} onClick={() => toggleLike(story.id)} className="text-xl">
-                    {story.liked ? "❤️" : "🤍"}
-                  </motion.button>
-                  <span className="text-sm text-gray-600">{story.liked ? 1 : 0} いいね</span>
-                </div>
-              </CardContent>
-            </div>
+            <AnimatedStoryCard key={story.id} story={story} toggleLike={toggleLike} />
           ))}
         </div>
       )}
+
       {page === "post" && (
-        <div className="flex flex-col items-center space-y-4">
-          <video ref={videoRef} autoPlay playsInline className="w-full aspect-[9/16] bg-black rounded-xl" />
-          <div className="flex space-x-2">
-            <Button onClick={startCamera}>カメラ起動</Button>
-            <Button onClick={captureFromCamera}>撮影</Button>
-            <Button onClick={() => fileInputRef.current?.click()}>画像選択</Button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+        <div className="space-y-4 bg-white p-4 rounded-xl shadow">
+          <div className="relative w-full aspect-[9/16] bg-gray-200 rounded-xl flex items-center justify-center">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover rounded-xl" />
+            {!capturedImage && <span className="absolute text-gray-500">カメラプレビュー</span>}
           </div>
-          {capturedImage && <img src={capturedImage} alt="preview" className="w-full aspect-[9/16] rounded-xl" />}
-          <Button onClick={handleSubmitPost} disabled={!capturedImage} className="bg-green-600 text-white w-full py-2 rounded-xl">
-            投稿する
-          </Button>
+          <div className="flex justify-around">
+            <Button onClick={startCamera}>📹 カメラON</Button>
+            <Button onClick={captureFromCamera}>📷 撮影</Button>
+            <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>📁 選択</Button>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+          </div>
+          <Button className="w-full bg-blue-600 text-white" onClick={handleSubmitPost}>投稿する</Button>
         </div>
       )}
+
       {page === "profile" && (
         <div className="bg-white p-4 rounded-xl shadow space-y-4">
           <div className="flex items-center justify-between">
