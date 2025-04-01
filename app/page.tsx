@@ -174,9 +174,9 @@ export default function RelayStoryMockup() {
   return (
     <div className="min-h-screen bg-gray-100 p-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <nav className="flex justify-between items-center mb-4">
-        <span className="text-lg font-bold">🏠 ホーム</span>
+        <button onClick={() => setPage("home")} className="text-lg font-bold">🏠 ホーム</button>
         <span className="text-xl font-bold">RelayStory</span>
-        <span className="text-lg font-bold">👤 プロフィール</span>
+        <button onClick={() => setPage("profile")} className="text-lg font-bold">👤 プロフィール</button>
       </nav>
 
       {showNotification && (
