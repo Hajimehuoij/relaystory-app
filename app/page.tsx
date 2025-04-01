@@ -1,3 +1,5 @@
+"use client";
+
 // ここからRelayStoryMockup.tsx
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +54,7 @@ export default function RelayStoryMockup() {
   const [batonTimer, setBatonTimer] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const touchStartX = useRef<number>(0);
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -74,14 +76,14 @@ export default function RelayStoryMockup() {
     return () => clearInterval(timer);
   }, [hasPostingRight, batonTimer]);
 
-  const formatTime = (seconds: number): string => {
+  const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${h}h ${m}m ${s}s`;
   };
 
-  const toggleLike = (id: number): void => {
+  const toggleLike = (id: number) => {
     setStories((prev) =>
       prev.map((story) =>
         story.id === id ? { ...story, liked: !story.liked } : story
@@ -89,17 +91,17 @@ export default function RelayStoryMockup() {
     );
   };
 
-  const acceptPostingRight = (): void => {
+  const acceptPostingRight = () => {
     setHasPostingRight(true);
     setShowNotification(false);
     setPage("post");
   };
 
-  const handleTouchStart = (e: React.TouchEvent): void => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches?.[0]?.clientX ?? 0;
   };
 
-  const handleTouchEnd = (e: React.TouchEvent): void => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     const deltaX = (e.changedTouches?.[0]?.clientX ?? 0) - touchStartX.current;
     if (deltaX > 100) {
       setPage("profile");
@@ -109,7 +111,7 @@ export default function RelayStoryMockup() {
     touchStartX.current = 0;
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -119,14 +121,14 @@ export default function RelayStoryMockup() {
     reader.readAsDataURL(file);
   };
 
-  const startCamera = async (): Promise<void> => {
+  const startCamera = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
     }
   };
 
-  const captureFromCamera = (): void => {
+  const captureFromCamera = () => {
     const video = videoRef.current;
     if (!video) return;
     const canvas = document.createElement("canvas");
@@ -143,11 +145,12 @@ export default function RelayStoryMockup() {
     }
   };
 
-  const handleSubmitPost = (): void => {
+  const handleSubmitPost = () => {
+    if (!capturedImage) return;
     const newStory: Story = {
       id: stories.length + 1,
       user: "you_123",
-      imageUrl: capturedImage as string,
+      imageUrl: capturedImage,
       liked: false,
     };
     setStories([newStory, ...stories]);
@@ -157,7 +160,7 @@ export default function RelayStoryMockup() {
     setPage("home");
   };
 
-  const handlePassOn = (): void => {
+  const handlePassOn = () => {
     const target = selectedFollower || dummyFollowers[Math.floor(Math.random() * dummyFollowers.length)];
     alert(`バトンを @${target} に渡しました！🎉`);
     setSelectedFollower("");
@@ -168,5 +171,5 @@ export default function RelayStoryMockup() {
     }, 3000);
   };
 
-  return null; // 仮でビルド通す
+  return <div>（UIのJSXは今後追加）</div>;
 }
